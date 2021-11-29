@@ -217,8 +217,7 @@ def seleciona_pets_and_users_status(type, status):
                                             Pet.user_id == User.id).add_columns(Pet.id, Pet.pet_name, Pet.type,
                                                                                       Pet.status, Pet.description, Pet.user_id,
                                                                                       User.name, User.phone,
-                                                                                      User.email).filter(Pet.type == type and
-                                                                                                         Pet.status == status)
+                                                                                      User.email).filter(Pet.type == type).filter(Pet.status == status)
 
     list = []
 
