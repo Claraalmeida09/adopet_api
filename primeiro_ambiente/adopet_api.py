@@ -23,57 +23,12 @@ app.config['SQLALCHEMY_DATABASE_URI'] = ('oracle+cx_oracle://system:123456789CCC
 CORS(app)
 app.config['SECRET_KEY'] = password
 
-
 db = SQLAlchemy(app)
 
 lm = LoginManager(app)
-#
-#
-# class User(db.Model):
-#     __tablename__ = 'users'
-#     id = db.Column(db.Integer, primary_key=True)
-#     username = db.Column(db.String(50), unique=True)
-#     name = db.Column(db.String(50))
-#     email = db.Column(db.String(100), unique=True)
-#     password = db.Column(db.String(20))
-#     phone = db.Column(db.String(15))
-#
-#     # db.create_all()
-#
-#     @property
-#     def is_autenticated(self):
-#         return True
-#
-#     @property
-#     def is_active(self):
-#         return True
-#
-#     @property
-#     def is_anonymous(self):
-#         return False
-#
-#     @property
-#     def is_anonymous(self):
-#         return False
-#
-#     def get_id(self):
-#         return self.id
-#
-#
-# def to_json(self):
-#     return {"id": self.id, "username": self.username, "name": self.name, "email": self.email, "password": self.password,
-#             "phone": self.phone}
-#
-#
-# class Pet(db.Model):
-#     __tablename__ = 'pets'
-#
-#     id = db.Column(db.Integer, primary_key=True)
-#     pet_name = db.Column(db.String(50))
-#     type = db.Column(db.String(50))
-#     status = db.Column(db.String(1))
-#     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
-#     user = db.relationship('User', foreign_keys=user_id)
+
+
+
 
 
 # db.create_all()
@@ -86,34 +41,31 @@ class User(db.Model):
     email = db.Column(db.String(100), unique=True)
     password = db.Column(db.String(20))
     phone = db.Column(db.String(15))
-    # db.create_all()
 
+    # db.create_all()
 
     @property
     def is_autenticated(self):
         return True
 
-
     @property
     def is_active(self):
         return True
 
-
     @property
     def is_anonymous(self):
         return False
 
-
     @property
     def is_anonymous(self):
         return False
-
 
     def get_id(self):
         return self.id
 
     def to_json(self):
-        return {"id": self.id, "username": self.username, "name": self.name, "email": self.email, "password": self.password,
+        return {"id": self.id, "username": self.username, "name": self.name, "email": self.email,
+                "password": self.password,
                 "phone": self.phone}
 
 
@@ -128,11 +80,10 @@ class Pet(db.Model):
     user = db.relationship('User', foreign_keys=user_id)
 
     def to_json(self):
-        return {"id": self.id, "pet_name": self.pet_name, "type": self.type, "description": self.description, "status": self.status,
+        return {"id": self.id, "pet_name": self.pet_name, "type": self.type, "description": self.description,
+                "status": self.status,
                 "user_id": self.user_id,
                 }
-
-
 
 
 @app.route("/")
@@ -165,14 +116,6 @@ def login():
 
 
 
-
-# @app.route("/logout")
-# @login_required
-# def logout():
-#     logout_user()
-#     return redirect(somewhere)
-##########################################################################################
-
 # Selecionar Tudo Usuário
 @app.route("/usuarios", methods=["GET"])
 def seleciona_usuarios():
@@ -190,43 +133,90 @@ def seleciona_pets():
 
     return gera_response(200, "pets", pets_json)
 
+
 ###########################################################
-# Selecionar Tudo PET com usuarios
-@app.route("/pets/type=<type>/user", methods=["GET"])
-def seleciona_pets_and_users(type):
-    pets_and_users_objetos = Pet.query.join(User, Pet.user_id==User.id).add_columns(Pet.id,
-                                                                                    Pet.pet_name, Pet.type, Pet.status,
-                                                                                    Pet.description, Pet.user_id,
-                                                                                    User.name, User.phone,
-                                                                                    User.email).filter(Pet.type==type)
+# Selecionar todos os PETs com usuarios
+@app.route("/pets/user", methods=["GET"])
+def seleciona_pets_and_users():
+    pets_and_users_objetos = Pet.query.join(User, Pet.user_id == User.id).add_columns(Pet.id,
+                                                                                      Pet.pet_name, Pet.type,
+                                                                                      Pet.status,
+                                                                                      Pet.description, Pet.user_id,
+                                                                                      User.name, User.phone,
+                                                                                      User.email)
 
     list = []
 
     for row in pets_and_users_objetos:
-        map = {"pet_id": row[1], "pet_name": row[2], "type": row[3],"status": row[4], "description": row[5],
-               "user_id": row[6],"name": row[7], "email": row[9],"phone": row[8]}
+        map = {"pet_id": row[1], "pet_name": row[2], "type": row[3], "status": row[4], "description": row[5],
+               "user_id": row[6], "name": row[7], "email": row[9], "phone": row[8]}
+        list.append(map)
+
+    return gera_response(200, "pets_users", list)
+
+
+# Selecionar todos PETs com usuarios e status
+@app.route("/pets/user/status=<status>", methods=["GET"])
+def seleciona_pets_and_users_all_status(status):
+    pets_and_users_objetos = Pet.query.join(User, Pet.user_id == User.id).add_columns(Pet.id,
+                                                                                      Pet.pet_name, Pet.type,
+                                                                                      Pet.status,
+                                                                                      Pet.description, Pet.user_id,
+                                                                                      User.name, User.phone,
+                                                                                      User.email).filter(
+        Pet.status == status)
+
+    list = []
+
+    for row in pets_and_users_objetos:
+        map = {"pet_id": row[1], "pet_name": row[2], "type": row[3], "status": row[4], "description": row[5],
+               "user_id": row[6], "name": row[7], "email": row[9], "phone": row[8]}
+        list.append(map)
+
+    return gera_response(200, "pets_users", list)
+
+
+# Selecionar Tipo PET com usuarios
+@app.route("/pets/user/type=<type>", methods=["GET"])
+def seleciona_pets_and_users_type(type):
+    pets_and_users_objetos = Pet.query.join(User, Pet.user_id == User.id).add_columns(Pet.id,
+                                                                                      Pet.pet_name, Pet.type,
+                                                                                      Pet.status,
+                                                                                      Pet.description, Pet.user_id,
+                                                                                      User.name, User.phone,
+                                                                                      User.email).filter(
+        Pet.type == type)
+
+    list = []
+
+    for row in pets_and_users_objetos:
+        map = {"pet_id": row[1], "pet_name": row[2], "type": row[3], "status": row[4], "description": row[5],
+               "user_id": row[6], "name": row[7], "email": row[9], "phone": row[8]}
         list.append(map)
 
     return gera_response(200, "pets_users", list)
 
 
 # Selecionar Tudo PET com usuarios status
-@app.route("/pets/type=<type>/user/status=<status>", methods=["GET"])
+@app.route("/pets/user/type=<type>/status=<status>", methods=["GET"])
 def seleciona_pets_and_users_status(type, status):
     pets_and_users_objetos = Pet.query.join(User,
                                             Pet.user_id == User.id).add_columns(Pet.id, Pet.pet_name, Pet.type,
-                                                                                      Pet.status, Pet.description, Pet.user_id,
-                                                                                      User.name, User.phone,
-                                                                                      User.email).filter(Pet.type == type).filter(Pet.status == status)
+                                                                                Pet.status, Pet.description,
+                                                                                Pet.user_id,
+                                                                                User.name, User.phone,
+                                                                                User.email).filter(
+        Pet.type == type).filter(Pet.status == status)
 
     list = []
 
     for row in pets_and_users_objetos:
-        map = {"pet_id": row[1], "pet_name": row[2], "type": row[3],"status": row[4], "description": row[5],
-               "user_id": row[6],"name": row[7], "email": row[9],"phone": row[8]}
+        map = {"pet_id": row[1], "pet_name": row[2], "type": row[3], "status": row[4], "description": row[5],
+               "user_id": row[6], "name": row[7], "email": row[9], "phone": row[8]}
         list.append(map)
 
     return gera_response(200, "pets_users", list)
+
 
 #########################################################
 
@@ -237,6 +227,7 @@ def seleciona_usuario(id):
     usuario_json = usuario_objeto.to_json()
 
     return gera_response(200, "usuario", usuario_json)
+
 
 ###########################################################################
 
@@ -258,6 +249,7 @@ def seleciona_pets_type(type):
 
     pets_json = [pets.to_json() for pets in pet_objeto]
     return gera_response(200, "pets", pets_json)
+
 
 ############################################################################
 
@@ -286,7 +278,7 @@ def cria_pet():
     try:
         pet = Pet(pet_name=body["pet_name"], type=body["type"], description=body["description"],
                   status=body["status"], user_id=body["user_id"],
-                       )
+                  )
         # usuario = User(username=body["username"], email=body["email"], password=body["password"])
         db.session.add(pet)
         db.session.commit()
@@ -295,8 +287,9 @@ def cria_pet():
         print('Erro', e)
         return gera_response(400, "pet", {}, "Erro ao cadastrar")
 
+
 ###########################################################################
-# Atualizar
+# Atualizar Usuário
 @app.route("/usuario/<id>", methods=["PUT"])
 def atualiza_usuario(id):
     usuario_objeto = User.query.filter_by(id=id).first()
@@ -320,6 +313,37 @@ def atualiza_usuario(id):
     except Exception as e:
         print('Erro', e)
         return gera_response(400, "usuario", {}, "Erro ao atualizar")
+
+
+##################################################################################
+
+
+# Atualizar Pet
+
+@app.route("/pet/<id>", methods=["PUT"])
+def atualiza_pet(id):
+    pet_objeto = Pet.query.filter_by(id=id).first()
+    body = request.get_json()
+
+    try:
+        if ('pet_name' in body):
+            pet_objeto.pet_name = body['pet_name']
+        if ('type' in body):
+            pet_objeto.type = body['type']
+        if ('description' in body):
+            pet_objeto.description = body['description']
+        if ('status' in body):
+            pet_objeto.status = body['status']
+        if ('user_id' in body):
+            pet_objeto.user_id = body['user_id']
+
+        db.session.add(pet_objeto)
+        db.session.commit()
+        return gera_response(200, "pet", pet_objeto.to_json(), "Atualizado com sucesso")
+    except Exception as e:
+        print('Erro', e)
+        return gera_response(400, "usuario", {}, "Erro ao atualizar")
+
 
 ################################################################################
 
@@ -349,6 +373,7 @@ def deleta_pet(id):
     except Exception as e:
         print('Erro', e)
         return gera_response(400, "pet", {}, "Erro ao deletar")
+
 
 ####################################################################################
 def gera_response(status, nome_do_conteudo, conteudo, mensagem=False):
